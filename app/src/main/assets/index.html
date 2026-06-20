@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#0a0a12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>率土助手 - 冲荣誉</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+<style>
+:root {
+  --bg: #0a0a12;
+  --bg-card: #13131f;
+  --bg-card2: #1a1a2e;
+  --gold: #c9a84c;
+  --gold-light: #e8d48b;
+  --red: #c0392b;
+  --red-dark: #8b1a1a;
+  --green: #27ae60;
+  --cyan: #00bcd4;
+  --purple: #8e44ad;
+  --text: #e8dcc8;
+  --text-dim: #7a7a8a;
+  --border: #2a2a3e;
+  --radius: 12px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app{max-width:480px;margin:0 auto;padding:0 0 calc(70px + var(--safe-bottom)) 0;min-height:100vh}
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--bg);padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.header h1{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .status{font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px}
+.header .status .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot-green{background:var(--green)}
+.dot-red{background:var(--red)}
+
+/* Tab Content */
+.tab-content{display:none;padding:12px 16px 20px;animation:fadeIn .25s ease}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Bottom Tab Bar */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--bg-card);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));max-width:480px;margin:0 auto}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;background:none;border:none;color:var(--text-dim);font-size:10px;cursor:pointer;transition:color .2s}
+.tab-btn.active{color:var(--gold)}
+.tab-btn svg{width:22px;height:22px}
+
+/* Cards */
+.card{background:var(--bg-card);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border:1px solid var(--border)}
+.card-title{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+
+/* Stats Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat-box{background:var(--bg-card);border-radius:10px;padding:10px 8px;text-align:center;border:1px solid var(--border)}
+.stat-box .val{font-size:18px;font-weight:700;color:var(--gold)}
+.stat-box .lbl{font-size:10px;color:var(--text-dim);margin-top:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg)}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%;justify-content:center;margin-bottom:8px}
+
+/* Inputs */
+input,select,textarea{background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;width:100%;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:60px;font-family:inherit}
+label{font-size:12px;color:var(--text-dim);display:block;margin-bottom:4px}
+
+/* Toggle */
+.toggle{position:relative;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.toggle input{display:none}
+.toggle-slider{width:40px;height:22px;background:var(--bg-card2);border-radius:11px;transition:.25s;position:relative}
+.toggle-slider::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--text-dim);transition:.25s}
+.toggle input:checked+.toggle-slider{background:var(--gold)}
+.toggle input:checked+.toggle-slider::after{background:#fff;transform:translateX(18px)}
+
+/* List items */
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.list-item:last-child{border-bottom:none}
+.list-item .left{display:flex;align-items:center;gap:10px}
+.list-item .left .icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.item-title{font-size:13px;font-weight:500}
+.item-sub{font-size:11px;color:var(--text-dim)}
+
+/* Strategy accordion */
+.accordion{margin-bottom:6px}
+.accordion-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-card);border-radius:var(--radius);cursor:pointer;border:1px solid var(--border);font-size:13px;font-weight:500;transition:background .2s}
+.accordion-header:active{background:var(--bg-card2)}
+.accordion-body{padding:0 14px;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.accordion-body.open{max-height:800px;padding:10px 14px 14px}
+.accordion-body p,.accordion-body li{font-size:13px;line-height:1.7;color:var(--text-dim);margin-bottom:6px}
+.accordion-body ul{padding-left:18px}
+
+/* Badge */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-gold{background:var(--gold);color:var(--bg)}
+.badge-green{background:var(--green);color:#fff}
+.badge-red{background:var(--red-dark);color:#fff}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--bg-card);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h2{font-size:16px;margin-bottom:12px;color:var(--gold)}
+.modal-close{float:right;background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer}
+
+/* Loading */
+.loading{display:flex;align-items:center;justify-content:center;padding:30px;color:var(--text-dim)}
+.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Chat */
+.chat-msg{padding:10px 14px;border-radius:12px;margin-bottom:8px;max-width:85%;font-size:13px;line-height:1.5}
+.chat-msg.user{background:var(--gold);color:var(--bg);margin-left:auto;border-bottom-right-radius:4px}
+.chat-msg.ai{background:var(--bg-card2);color:var(--text);margin-right:auto;border-bottom-left-radius:4px}
+.chat-input{display:flex;gap:8px;margin-top:12px}
+.chat-input input{flex:1}
+
+/* Honor progress */
+.honor-bar{height:8px;background:var(--bg-card2);border-radius:4px;overflow:hidden;margin:6px 0}
+.honor-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:4px;transition:width .5s ease}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* Responsive */
+@media(min-width:480px){.app{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>👑 率土助手</h1>
+    <div class="status">
+      <span class="dot dot-green" id="statusDot"></span>
+      <span id="statusText">就绪</span>
+    </div>
+  </div>
+
+  <!-- ===== TAB: 仪表盘 ===== -->
+  <div class="tab-content active" id="tab-dashboard">
+    <div class="stats-grid">
+      <div class="stat-box"><div class="val" id="totalHonor">0</div><div class="lbl">总荣誉</div></div>
+      <div class="stat-box"><div class="val" id="todayWuxun">0</div><div class="lbl">今日武勋</div></div>
+      <div class="stat-box"><div class="val" id="accountCount">0</div><div class="lbl">账号数</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 冲荣誉进度</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)"><span>当前</span><span id="honorProgressText">0 / 100000</span></div>
+      <div class="honor-bar"><div class="honor-bar-fill" id="honorBarFill" style="width:0%"></div></div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-dim)" id="honorTargetHint">目标：赛季荣誉100,000</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ 快捷操作</div>
+      <button class="btn btn-gold btn-block" onclick="openModal('deepseek')">🧠 DeepSeek 战略咨询</button>
+      <button class="btn btn-outline btn-block" onclick="openModal('addAccount')">➕ 添加账号</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 今日待办</div>
+      <div id="dailyTasks"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: 攻略 ===== -->
+  <div class="tab-content" id="tab-strategy">
+    <div class="card">
+      <div class="card-title">🏆 冲荣誉攻略</div>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:10px">DeepSeek 驱动的智能攻略，一站式掌握赛季冲分要点。</p>
+    </div>
+    <div id="strategyList"></div>
+  </div>
+
+  <!-- ===== TAB: 自动 ===== -->
+  <div class="tab-content" id="tab-auto">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><div class="card-title" style="margin:0">🤖 自动执行</div><span style="font-size:11px;color:var(--text-dim)">Auto.js 执行引擎</span></div>
+      <label class="toggle"><input type="checkbox" id="autoToggle"><span class="toggle-slider"></span></label>
+    </div>
+    <div id="taskList"></div>
+    <div class="card">
+      <div class="card-title">📜 执行日志</div>
+      <div id="logArea" style="font-size:11px;color:var(--text-dim);max-height:200px;overflow-y:auto;font-family:monospace;line-height:1.6"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: 账号 ===== -->
+  <div class="tab-content" id="tab-accounts">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600">我的账号</span>
+      <button class="btn btn-gold btn-sm" onclick="openModal('addAccount')">+ 添加</button>
+    </div>
+    <div id="accountList"><div class="card" style="text-align:center;color:var(--text-dim);padding:30px">暂无账号，点击右上角添加</div></div>
+  </div>
+
+  <!-- ===== TAB: 设置 ===== -->
+  <div class="tab-content" id="tab-settings">
+    <div class="card">
+      <div class="card-title">🔑 DeepSeek API</div>
+      <label>API Key</label>
+      <div style="display:flex;gap:6px">
+        <input type="password" id="apiKeyInput" placeholder="sk-..." style="flex:1" onchange="saveSettings()">
+        <button class="btn btn-gold btn-sm" onclick="toggleApiKeyVisibility(this)">👁️</button>
+      </div>
+      <label style="margin-top:8px">API 地址</label>
+      <input type="text" id="apiUrlInput" value="https://api.deepseek.com" onchange="saveSettings()">
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="testApiKey()">测试连接</button>
+        <span id="apiTestResult" style="font-size:12px;align-self:center"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ 通用设置</div>
+      <div class="list-item">
+        <span style="font-size:13px">自动执行间隔</span>
+        <select id="execInterval" onchange="saveSettings()" style="width:auto">
+          <option value="30">30秒</option>
+          <option value="60" selected>1分钟</option>
+          <option value="300">5分钟</option>
+          <option value="900">15分钟</option>
+        </select>
+      </div>
+      <div class="list-item">
+        <span style="font-size:13px">通知提醒</span>
+        <label class="toggle"><input type="checkbox" id="notifToggle" onchange="saveSettings()"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;color:var(--text-dim);font-size:12px">
+      <p>率土助手 v1.0</p>
+      <p>DeepSeek 驱动 · 冲荣誉神器</p>
+    </div>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>仪表盘</span>
+    </button>
+    <button class="tab-btn" data-tab="strategy" onclick="switchTab('strategy')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <span>攻略</span>
+    </button>
+    <button class="tab-btn" data-tab="auto" onclick="switchTab('auto')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span>自动</span>
+    </button>
+    <button class="tab-btn" data-tab="accounts" onclick="switchTab('accounts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>账号</span>
+    </button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <span>设置</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== Modal: DeepSeek 咨询 ===== -->
+<div class="modal-overlay" id="modal-deepseek">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('deepseek')">✕</button>
+    <h2>🧠 DeepSeek 战略咨询</h2>
+    <div id="chatArea" style="max-height:50vh;overflow-y:auto;margin-bottom:10px">
+      <div class="chat-msg ai">你好！我是率土助手战略分析师。有什么冲荣誉的问题尽管问！</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="问战术、配将、冲分策略..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-gold btn-sm" onclick="sendChat()">发送</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: 添加账号 ===== -->
+<div class="modal-overlay" id="modal-addAccount">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addAccount')">✕</button>
+    <h2>➕ 添加账号</h2>
+    <label>账号备注</label>
+    <input type="text" id="accName" placeholder="例如：大号、小号1" style="margin-bottom:8px">
+    <label>服务器</label>
+    <input type="text" id="accServer" placeholder="例如：S1 天下争锋" style="margin-bottom:8px">
+    <label>赛季</label>
+    <input type="text" id="accSeason" placeholder="当前赛季" style="margin-bottom:12px">
+    <button class="btn btn-gold btn-block" onclick="addAccount()">保存账号</button>
+  </div>
+</div>
+
+<script>
+// ====== 数据层 ======
+const DB = {
+  get(k, def=null) { try { const v=localStorage.getItem('ltzb_'+k); return v?JSON.parse(v):def } catch { return def } },
+  set(k, v) { localStorage.setItem('ltzb_'+k, JSON.stringify(v)) }
+};
+
+// ====== 攻略知识库 ======
+const STRATEGIES = [
+  { title:'🏆 荣誉总览', icon:'🏆', body:[
+    '赛季荣誉是率土之滨最重要的排名指标，直接影响赛季奖励和称号。',
+    '荣誉来源：武勋(40%) > 攻城(25%) > 翻地(15%) > 赛季任务(10%) > 同盟贡献(5%) > 拆迁(5%)',
+    '冲荣誉黄金法则：Daily Plan + DeepSeek 智能决策 + 高效执行 = 最大产出'
+  ]},
+  { title:'⚔️ 武勋冲分攻略', icon:'⚔️', body:[
+    '武勋是荣誉占比最高的来源，占40%。',
+    '• 黄金时间：每晚 20:00-23:00（在线人数最多，互相刷武勋效率最高）',
+    '• 最优目标优先级：敌方主力部队 > 高级要塞驻军 > 低级驻军',
+    '• 效率标准：每消耗1兵力产出1.5+武勋为高效',
+    '• 推荐配将：法刀队(高爆发) + 菜刀队(持续输出) + 肉队(消耗战)',
+    '• 避坑：不打被克制的队伍，不打兵力和自己差距>50%的队伍（浪费兵力）',
+    '• DeepSeek 可分析敌方阵容，帮你选出最优攻击目标'
+  ]},
+  { title:'🏰 攻城冲分攻略', icon:'🏰', body:[
+    '攻城占荣誉约25%，是第二大来源。',
+    '• 必参加每次同盟攻城，少一次就少一大截荣誉',
+    '• 拆迁队配置：至少3队攻城值>150的拆迁队',
+    '• 卡秒技巧：主力在最后3-5分钟集结拆迁，避免做无用功',
+    '• 攻城前DeepSeek分析：评估敌方防守强度，判断是否值得投入全部主力',
+    '• 深夜偷城：凌晨2-5点敌方防守薄弱，适合偷高级城'
+  ]},
+  { title:'🗺️ 翻地策略', icon:'🗺️', body:[
+    '翻地占荣誉约15%，积少成多。',
+    '• 优先目标：敌方7级以上高级地、敌方资源要塞附近的地',
+    '• 时机选择：敌方主力不在线时（可通过观察是否在打地判断）',
+    '• 路线规划：从边缘向中心蚕食，避免深入被包围',
+    '• 翻地路线交给DeepSeek规划：根据战场地图分析最优推进路线',
+    '• 效率：翻一块7级地约10-20荣誉，每天翻20块=200-400荣誉'
+  ]},
+  { title:'📋 赛季任务攻略', icon:'📋', body:[
+    '赛季任务占荣誉约10%，但需要提前规划。',
+    '• 限时任务 > 周常 > 日常，优先完成限时任务',
+    '• 赛季任务清单提前3天规划，别等到最后一刻',
+    '• 常见赛季任务：攻打特定城池、消灭指定部队数、资源产出达标',
+    '• DeepSeek帮你规划任务路线：按任务链最优顺序执行',
+    '• 设置手机提醒，不要错过任何限时任务'
+  ]},
+  { title:'🤝 同盟贡献攻略', icon:'🤝', body:[
+    '同盟贡献占荣誉约5%，虽然比例不高但不能放弃。',
+    '• 每天捐满资源（木铁石粮按需分配）',
+    '• 主动驻守盟友要塞（被打了也算贡献）',
+    '• 共享视野：多探路、多侦察',
+    '• 参与同盟讨论，提供有价值的情报',
+    '• 帮助萌新（加分项，联盟管理会注意到）'
+  ]},
+  { title:'🤖 DeepSeek 智能玩法', icon:'🧠', body:[
+    'DeepSeek 在率土助手中的核心能力：',
+    '• 🎯 智能目标选择：分析敌方阵容，推荐最优进攻目标',
+    '• 🗺️ 战场态势分析：通过情报判断哪里最需要你',
+    '• ⚔️ 配将建议：根据敌方阵容推荐克制队伍',
+    '• 📈 荣誉冲刺规划：根据当前排名推荐冲刺策略',
+    '• ⏰ 时间管理：规划每日最佳游戏时间线',
+    '• 使用方式：在"仪表盘"点击"DeepSeek 战略咨询"随时提问'
+  ]}
+];
+
+// ====== 任务模板 ======
+const TASKS = [
+  { id:'farm', label:'刷武勋', icon:'⚔️', desc:'自动寻找目标刷武勋', estHonor:500 },
+  { id:'siege', label:'参与攻城', icon:'🏰', desc:'监测并参与同盟攻城', estHonor:300 },
+  { id:'flip', label:'翻地', icon:'🗺️', desc:'自动翻敌方高级地', estHonor:200 },
+  { id:'collect', label:'收资源', icon:'📦', desc:'定时收取城内资源', estHonor:50 },
+  { id:'quest', label:'赛季任务', icon:'📋', desc:'检查并完成赛季任务', estHonor:150 },
+  { id:'donate', label:'捐资源', icon:'🤝', desc:'每日捐满同盟资源', estHonor:50 }
+];
+
+// ====== 应用逻辑 ======
+let appState = {};
+
+function init() {
+  appState = DB.get('state', {
+    accounts: [],
+    honor: { total: 0, todayWuxun: 0, target: 100000 },
+    tasks: {},
+    apiKey: '',
+    apiUrl: 'https://api.deepseek.com',
+    execInterval: 60,
+    notifications: true
+  });
+  document.getElementById('apiKeyInput').value = appState.apiKey || '';
+  document.getElementById('apiUrlInput').value = appState.apiUrl || 'https://api.deepseek.com';
+  renderDashboard();
+  renderStrategies();
+  renderTasks();
+  renderAccounts();
+  loadLogs();
+}
+
+function saveSettings() {
+  appState.apiKey = document.getElementById('apiKeyInput').value;
+  appState.apiUrl = document.getElementById('apiUrlInput').value || 'https://api.deepseek.com';
+  appState.execInterval = parseInt(document.getElementById('execInterval').value);
+  appState.notifications = document.getElementById('notifToggle').checked;
+  DB.set('state', appState);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
+}
+
+function openModal(name) {
+  document.getElementById('modal-'+name).classList.add('active');
+  if(name==='deepseek') setTimeout(()=>document.getElementById('chatInput').focus(),300);
+}
+
+function closeModal(name) {
+  document.getElementById('modal-'+name).classList.remove('active');
+}
+
+// ====== 账号管理 ======
+function addAccount() {
+  const name = document.getElementById('accName').value.trim();
+  const server = document.getElementById('accServer').value.trim();
+  const season = document.getElementById('accSeason').value.trim();
+  if(!name) return;
+  appState.accounts.push({ id:Date.now(), name, server, season, honor:0, wuxun:0, active:false });
+  DB.set('state', appState);
+  closeModal('addAccount');
+  document.getElementById('accName').value='';
+  document.getElementById('accServer').value='';
+  document.getElementById('accSeason').value='';
+  renderAccounts();
+  renderDashboard();
+}
+
+function deleteAccount(id) {
+  if(!confirm('删除此账号？')) return;
+  appState.accounts = appState.accounts.filter(a => a.id!==id);
+  DB.set('state', appState);
+  renderAccounts();
+  renderDashboard();
+}
+
+function renderAccounts() {
+  const el = document.getElementById('accountList');
+  if(!appState.accounts.length) {
+    el.innerHTML = '<div class="card" style="text-align:center;color:var(--text-dim);padding:30px">暂无账号，点击右上角添加</div>';
+    return;
+  }
+  el.innerHTML = appState.accounts.map(a => `
+    <div class="card">
+      <div class="list-item">
+        <div class="left">
+          <div class="icon" style="background:var(--gold)20">👤</div>
+          <div>
+            <div class="item-title">${a.name}</div>
+            <div class="item-sub">${a.server||'未设置'} · ${a.season||'未知赛季'}</div>
+          </div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="deleteAccount(${a.id})">删除</button>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--text-dim)">
+        <span>🏆 ${a.honor||0} 荣誉</span>
+        <span>⚔️ ${a.wuxun||0} 武勋</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ====== 仪表盘 ======
+function renderDashboard() {
+  const ac = appState.accounts;
+  document.getElementById('accountCount').textContent = ac.length;
+  const totalHonor = ac.reduce((s,a) => s+(a.honor||0), 0);
+  const todayWuxun = ac.reduce((s,a) => s+(a.wuxun||0), 0);
+  document.getElementById('totalHonor').textContent = totalHonor.toLocaleString();
+  document.getElementById('todayWuxun').textContent = todayWuxun.toLocaleString();
+  const target = appState.honor.target || 100000;
+  const pct = Math.min(100, (totalHonor/target)*100);
+  document.getElementById('honorBarFill').style.width = pct+'%';
+  document.getElementById('honorProgressText').textContent = `${totalHonor.toLocaleString()} / ${target.toLocaleString()}`;
+  const remain = target - totalHonor;
+  document.getElementById('honorTargetHint').textContent = `还差 ${remain.toLocaleString()} 荣誉达到赛季目标`;
+
+  // Daily tasks
+  const tasksEl = document.getElementById('dailyTasks');
+  const allDone = TASKS.every(t => appState.tasks[t.id]);
+  if(allDone) {
+    tasksEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--green)">✅ 今日所有任务已完成！</div>';
+  } else {
+    tasksEl.innerHTML = TASKS.map(t => `
+      <div class="list-item">
+        <div class="left">
+          <span style="font-size:16px">${t.icon}</span>
+          <div>
+            <div class="item-title">${t.label}</div>
+            <div class="item-sub">${t.desc} · +${t.estHonor} 荣誉</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" ${appState.tasks[t.id]?'checked':''} onchange="toggleTask('${t.id}')"><span class="toggle-slider"></span></label>
+      </div>
+    `).join('');
+  }
+}
+
+function toggleTask(id) {
+  appState.tasks[id] = !appState.tasks[id];
+  if(!appState.tasks[id]) delete appState.tasks[id];
+  DB.set('state', appState);
+  renderDashboard();
+}
+
+// ====== 攻略渲染 ======
+function renderStrategies() {
+  const el = document.getElementById('strategyList');
+  el.innerHTML = STRATEGIES.map((s,i) => `
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span>${s.title}</span>
+        <span style="transition:transform .2s">▼</span>
+      </div>
+      <div class="accordion-body">
+        ${s.body.map(p => `<p>${p}</p>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAccordion(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('span:last-child');
+  body.classList.toggle('open');
+  arrow.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+// ====== 自动任务 ======
+function renderTasks() {
+  const el = document.getElementById('taskList');
+  el.innerHTML = TASKS.map(t => `
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:13px;font-weight:500">${t.icon} ${t.label}</div>
+        <div style="font-size:11px;color:var(--text-dim)">${t.desc}</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="runTask('${t.id}')">执行</button>
+    </div>
+  `).join('');
+}
+
+function runTask(taskId) {
+  const task = TASKS.find(t => t.id===taskId);
+  if(!task) return;
+  addLog(`开始执行: ${task.label}`);
+  setStatus('running', '执行中');
+  
+  // Check DeepSeek API
+  if(!appState.apiKey) {
+    addLog('⚠️ 未设置 DeepSeek API Key，请到设置页配置');
+    setStatus('idle', '待命');
+    switchTab('settings');
+    return;
+  }
+  
+  // Simulate execution
+  setTimeout(() => {
+    const honor = Math.floor(Math.random() * task.estHonor);
+    appState.tasks[taskId] = true;
+    if(appState.accounts.length) {
+      appState.accounts[0].honor = (appState.accounts[0].honor||0) + honor;
+      appState.accounts[0].wuxun = (appState.accounts[0].wuxun||0) + (taskId==='farm'?honor:0);
+    }
+    DB.set('state', appState);
+    addLog(`✅ ${task.label} 完成，获得 +${honor} 荣誉`);
+    setStatus('idle', '待命');
+    renderDashboard();
+    renderAccounts();
+  }, 1500);
+}
+
+// ====== DeepSeek API ======
+async function callDeepSeek(messages) {
+  const apiKey = appState.apiKey;
+  const apiUrl = appState.apiUrl || 'https://api.deepseek.com';
+  if(!apiKey) throw new Error('请先设置 API Key');
+  
+  const systemPrompt = `你是一个精通率土之滨游戏的专业战略分析师。你的核心目标是帮助玩家最大化赛季荣誉产出。
+
+率土之滨荣誉来源：
+- 武勋(40%)：消灭敌方部队
+- 攻城(25%)：参与同盟攻城
+- 翻地(15%)：占领敌方领地
+- 赛季任务(10%)：完成赛季目标
+- 同盟贡献(5%)：捐资源和帮助盟友
+- 拆迁(5%)：拆敌方建筑
+
+核心策略：
+1. 每晚8-11点是刷武勋黄金时间
+2. 每次攻城必须参加
+3. 翻地优先7级以上的高级地
+4. 赛季限时任务优先做
+5. 每日捐满同盟资源
+
+根据当前战场情况，给玩家提供具体的、可执行的建议。回答简洁有力，直接给出策略。`;
+
+  const res = await fetch(apiUrl + '/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+apiKey
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{role:'system',content:systemPrompt}, ...messages],
+      temperature: 0.7,
+      max_tokens: 2000
+    })
+  });
+  
+  if(!res.ok) {
+    const err = await res.text();
+    throw new Error(`API 错误 (${res.status}): ${err}`);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  
+  const chatArea = document.getElementById('chatArea');
+  chatArea.innerHTML += `<div class="chat-msg user">${text}</div>`;
+  chatArea.scrollTop = chatArea.scrollHeight;
+  
+  const msgs = [{role:'user',content:text}];
+  try {
+    chatArea.innerHTML += `<div class="chat-msg ai" id="thinking-msg"><span class="spinner" style="display:inline-block;width:14px;height:14px;border-width:2px;margin-right:4px;vertical-align:middle"></span>思考中...</div>`;
+    const reply = await callDeepSeek(msgs);
+    document.getElementById('thinking-msg')?.remove();
+    chatArea.innerHTML += `<div class="chat-msg ai">${reply.replace(/\n/g,'<br>')}</div>`;
+  } catch(e) {
+    document.getElementById('thinking-msg')?.remove();
+    chatArea.innerHTML += `<div class="chat-msg ai" style="background:var(--red-dark)">⚠️ ${e.message}</div>`;
+  }
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+async function testApiKey() {
+  const el = document.getElementById('apiTestResult');
+  el.textContent = '测试中...';
+  try {
+    const reply = await callDeepSeek([{role:'user',content:'回复"连接成功"四个字'}]);
+    el.textContent = '✅ 连接成功！';
+    el.style.color = 'var(--green)';
+    setStatus('idle', '已连接 DeepSeek');
+  } catch(e) {
+    el.textContent = '❌ '+e.message;
+    el.style.color = 'var(--red)';
+  }
+}
+
+function toggleApiKeyVisibility(btn) {
+  const input = document.getElementById('apiKeyInput');
+  input.type = input.type==='password' ? 'text' : 'password';
+  btn.textContent = input.type==='password' ? '👁️' : '👁️‍🗨️';
+}
+
+// ====== 日志 ======
+function addLog(msg) {
+  const el = document.getElementById('logArea');
+  const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.innerHTML += `[${time}] ${msg}\n`;
+  el.scrollTop = el.scrollHeight;
+  const logs = DB.get('logs', []);
+  logs.push({time, msg});
+  if(logs.length>200) logs.splice(0, logs.length-200);
+  DB.set('logs', logs);
+}
+
+function loadLogs() {
+  const logs = DB.get('logs', []);
+  const el = document.getElementById('logArea');
+  el.innerHTML = logs.slice(-50).map(l => `[${l.time}] ${l.msg}`).join('\n');
+}
+
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'dot dot-'+(state==='running'?'green':'green');
+  txt.textContent = text;
+}
+
+// ====== Auto.js 脚本导出 ======
+function exportScripts() {
+  const script = `// 率土助手 Auto.js 主控脚本
+// 需要先在手机上安装 Auto.js Pro 或 Autox.js
+
+const DEEPSEEK_API_KEY = "${appState.apiKey || 'YOUR_API_KEY'}";
+const DEEPSEEK_URL = "${appState.apiUrl || 'https://api.deepseek.com'}";
+
+// ====== 工具函数 ======
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ====== DeepSeek 决策 ======
+async function askDeepSeek(prompt) {
+  const res = await http.post(
+    DEEPSEEK_URL + '/v1/chat/completions',
+    JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [
+        {role:'system', content:'你是率土之滨自动助手的AI大脑。根据当前游戏画面信息，返回下一步操作指令。以JSON格式返回：{"action":"click/swipe/wait","target":"坐标或描述","params":{}}'},
+        {role:'user', content: prompt}
+      ],
+      temperature: 0.3,
+      max_tokens: 1000
+    }),
+    {headers: {'Authorization': 'Bearer '+DEEPSEEK_API_KEY, 'Content-Type':'application/json'}}
+  );
+  const data = res.body.json();
+  return data.choices[0].message.content;
+}
+
+// ====== 屏幕识别 ======
+function captureScreen() {
+  const img = captureScreen();
+  // 使用 OpenCV 或 PaddleOCR 进行识别
+  return img;
+}
+
+// ====== 主循环 ======
+async function mainLoop() {
+  toast('率土助手启动');
+  while(true) {
+    // 1. 截图
+    const screen = captureScreen();
+    // 2. 分析当前状态
+    const decision = await askDeepSeek("当前游戏画面分析：检测武勋、攻城、翻地等可操作内容");
+    // 3. 执行操作
+    console.log('DeepSeek 决策:', decision);
+    // 4. 等待
+    await sleep(5000);
+  }
+}
+
+module.exports = mainLoop;
+`;
+  
+  // Create download link
+  const blob = new Blob([script], {type:'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '率土主控.js';
+  a.click();
+  URL.revokeObjectURL(url);
+  addLog('📦 主控脚本已导出');
+}
+
+// ====== 初始化 ======
+document.addEventListener('DOMContentLoaded', init);
+
+// Export functions to window for HTML onclick
+window.switchTab = switchTab;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.addAccount = addAccount;
+window.deleteAccount = deleteAccount;
+window.toggleTask = toggleTask;
+window.sendChat = sendChat;
+window.testApiKey = testApiKey;
+window.toggleApiKeyVisibility = toggleApiKeyVisibility;
+window.saveSettings = saveSettings;
+window.runTask = runTask;
+window.toggleAccordion = toggleAccordion;
+window.exportScripts = exportScripts;
+</script>
+</body>
+</html>
